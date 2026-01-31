@@ -36,7 +36,3 @@ If you find this work useful, please cite our paper:
 
 - **Paper**: [ArXiv](https://arxiv.org/abs/2510.11103)
 - **Code**: [GitHub Repository](https://github.com/amacati/so3_primer)
-
-## License
-
-[License information will be added]
