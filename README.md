@@ -1,6 +1,6 @@
-# Primer on SO(3) Actions in Deep RL - Website
+# Primer on SO(3) Action Representations in Deep RL - Website
 
-This repository hosts the project website for **"Primer on SO(3): Actions in Deep Reinforcement Learning"**.
+This repository hosts the project website for **"A Primer on SO(3) Action Representations in Deep Reinforcement Learning"**.
 
 ## About the Paper
 
@@ -14,9 +14,27 @@ The website features:
 - Interactive visualizations
 - Links to paper, code, and citation information
 
-## Building the Website
+## Quick Start
 
-[Instructions for building/deploying the website will be added]
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Visit `http://localhost:5173/so3_primer/` to see the website.
+
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
+
+## Building for Production
+
+```bash
+npm run build
+```
+
+The static site will be generated in the `dist/` directory, ready for deployment to GitHub Pages.
 
 ## Citation
 
@@ -36,3 +54,12 @@ If you find this work useful, please cite our paper:
 
 - **Paper**: [ArXiv](https://arxiv.org/abs/2510.11103)
 - **Code**: [GitHub Repository](https://github.com/amacati/so3_primer)
+
+## Tech Stack
+
+- **Vite** - Fast build tool and development server
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first styling
+- **Three.js** - 3D visualizations for rotation representations
+- **D3.js** - Interactive charts and plots
+- **KaTeX** - Mathematical notation rendering
