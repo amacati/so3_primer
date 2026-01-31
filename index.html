@@ -88,33 +88,163 @@
   <main class="container mx-auto px-6 max-w-6xl py-16 space-y-16">
     <!-- Introduction -->
     <section id="introduction">
-      <h2 class="text-3xl font-bold mb-6">A Primer on SO(3) Actions in Deep Reinforcement Learning</h2>
+      <!-- <h2 class="text-3xl font-bold mb-6">A Primer on SO(3) Actions in Deep Reinforcement Learning</h2> -->
       <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
+        <p class="text-lg leading-relaxed">
+          It's another day in the lab, and a student walks up to you asking for advice on how to control a robot arm
+          with an RL agent. The position can be handled with deltas in Cartesian space, but what about the orientation?
+          They thought about using Euler angles, but these have gimbal lock issues. Also, surely smooth representations
+          are better for learning, so maybe quaternions? Then again, quaternions double-cover SO(3) and thus are not
+          unique, which could lead to conflicting gradients. Maybe rotation matrices, since they are unique? But isn't
+          that a lot of dimensions to learn for just 3 degrees of freedom? And wasn't somebody saying tangent vectors
+          (i.e. axis-angles) are best?
+
+          <br /><br />
+
+          Each choice comes with different trade-offs, and while there are excellent papers on these representations for
+          supervised learning tasks [<a href="https://arxiv.org/abs/2404.11735" target="_blank"
+            class="text-blue-600 hover:text-blue-800">1</a>], nobody has systematically investigated which
+          one
+          works
+          best for <strong>actions</strong> in reinforcement learning. This matters because your choice doesn't just
+          affect how
+          the network outputs rotations—it fundamentally shapes how the agent explores, how entropy regularization
+          behaves, and ultimately how well your policy learns. We ran the experiments for <strong
+            class="font-mono">PPO</strong>, <strong class="font-mono">SAC</strong> and <strong
+            class="font-mono">TD3</strong> to figure out what actually works, and link the performance to theoretical
+          intuitions often mentioned when reasoning about rotation representations.
+        </p>
       </div>
     </section>
 
     <!-- SO(3) Representations -->
     <section id="representations">
-      <h2 class="text-3xl font-bold mb-6">SO(3) Rotation Representations</h2>
+      <h2 class="text-3xl font-bold mb-6">An Idealized Experiment</h2>
       <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
+        <figure class="float-right ml-6 mb-4 w-64">
+          <img src="env_dynamics.svg" alt="Environment dynamics showing rotation from current state to goal"
+            class="w-full">
+          <figcaption class="text-center text-xs text-gray-600 mt-2">The agent rotates from R<sub>t</sub> towards
+            R<sub>a</sub>, with max step α<sub>max</sub>, aiming to reach goal R<sub>g</sub>.</figcaption>
+        </figure>
+
+        <p class="text-lg leading-relaxed mb-4">
+          To really understand how rotation representations affect learning, we need to isolate the problem. So we built
+          the simplest possible environment: an agent that only controls orientation, with orientation as the only
+          state. Think of it as a floating gyroscope that just needs to rotate into target orientations. Each episode,
+          the agent starts at some random orientation and gets assigned a random
+          goal orientation. It can rotate at most α<sub>max</sub> radians per step, taking the shortest path toward
+          whatever orientation it commands.
+        </p>
+        <p class="text-lg leading-relaxed mb-4">
+          This setup let us run <em>a lot</em> of experiments. We tested all major representations (rotation matrices,
+          quaternions, Euler angles, and tangent vectors) across three popular RL algorithms
+          (<strong class="font-mono">PPO</strong>, <strong class="font-mono">SAC</strong> and <strong
+            class="font-mono">TD3</strong> ), using both global and delta action formulations, and each with dense and
+          sparse rewards. That's a lot of combinations, and the idealized environment made it feasible to thoroughly
+          explore the design space.
+        </p>
+        </p>
       </div>
     </section>
 
     <!-- Key Findings -->
     <section id="findings">
-      <h2 class="text-3xl font-bold mb-6">Key Findings</h2>
+      <h2 class="text-3xl font-bold mb-6">Key Findings and Recommendations</h2>
       <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
-      </div>
-    </section>
+        <h3 class="text-xl font-semibold mb-4 text-gray-600">TLDR: Use tangent vectors (i.e. axis-angles) in the local
+          frame</h3>
 
-    <!-- Recommendations -->
-    <section id="recommendations">
-      <h2 class="text-3xl font-bold mb-6">Recommendations</h2>
-      <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
+        <!-- <p class="text-lg leading-relaxed mb-4">
+          After running extensive experiments across PPO, SAC, and TD3 with different SO(3) representations, we tested
+          several hypotheses about what makes rotation actions work well in RL. Here's what we found:
+        </p>
+
+        <div class="space-y-4">
+          <div>
+            <h4 class="text-lg font-semibold mb-2">1. Smoothness and uniqueness matter, but not everywhere</h4>
+            <p class="text-base leading-relaxed mb-4">
+              We expected smooth, unique representations like rotation matrices to dominate. They do perform well, but
+              local tangent vectors consistently outperform them despite having singularities at large angles. The key
+              insight: those singularities don't matter if they're outside your agent's action range. When you limit
+              rotation magnitudes per step (as most physical systems do), the tangent space stays smooth and
+              well-behaved in practice.
+            </p>
+
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-2">2. Projections warp exploration in surprising ways</h4>
+            <p class="text-base leading-relaxed">
+              Standard Gaussian exploration noise gets heavily distorted when you project it onto SO(3). Euler angles
+              concentrate samples around gimbal-lock singularities. Quaternions and matrices spread samples nearly
+              uniformly at initialization, making early exploration chaotic. Local tangent vectors suffer least from
+              this, keeping exploration relatively well-behaved. This effect is especially pronounced in sparse reward
+              settings where exploration matters most.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-2">3. Entropy regularization has unintended consequences</h4>
+            <p class="text-base leading-relaxed">
+              SAC and PPO maximize entropy in Euclidean space, but after projection, higher Euclidean norms don't
+              necessarily mean more diverse rotations. For tangent vectors, large magnitudes just hit the action limit
+              more often. For matrices and quaternions, entropy maximization drives actions toward regions that appear
+              random in ℝ<sup>n</sup> but map to stable rotation directions. Scaling tangent vectors to the permissible
+              range helps mitigate this.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-2">4. Unit-centering helps delta actions for unstable systems</h4>
+            <p class="text-base leading-relaxed">
+              For delta actions with matrices or quaternions, zero-centered network outputs don't map to zero rotation.
+              Custom initialization that adds the identity rotation improves PPO performance noticeably, but shows mixed
+              results for SAC and TD3. Delta tangent and Euler representations naturally center around no rotation, so
+              they don't need this fix.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="text-lg font-semibold mb-2">5. Scaling tangent vectors improves stability</h4>
+            <p class="text-base leading-relaxed">
+              Restricting tangent vector norms to the maximum rotation angle eliminates discontinuities at the cut locus
+              and gives finer control in the relevant range. The improvement is modest for PPO with dense rewards but
+              becomes more relevant in sparse reward settings.
+            </p>
+          </div>
+        </div> -->
+        <ul class="list-disc list-inside space-y-2 text-base leading-relaxed">
+          <li><strong>Default choice:</strong> Delta tangent vectors in the local frame. Scale outputs to the range of
+            permissible rotations.</li>
+          <li><strong>Dense rewards help:</strong> Continuous feedback can mask representation issues.
+            Sparse rewards amplify differences.</li>
+          <li><strong>For unstable systems (e.g. drones):</strong> Tangent vectors remain the best choise. If using
+            matrices/quaternions, use delta actions and unit-centering. For limited operation ranges, Euler angles can
+            be viable.</li>
+          <li><strong>Fixed target poses:</strong> If your task involves reaching fixed target poses (not relative
+            positioning), matrices or quaternions in the global frame may match or beat deltas.</li>
+          <li><strong>Avoid Euler angles for general tasks:</strong> Delta Euler angles work for small rotations but
+            degrade as coverage of SO(3) increases.</li>
+        </ul>
+
+        <h3 class="text-2xl font-semibold mb-4 mt-8">Example Training Curves</h3>
+        We show a few representative training curves from our idealized rotation environment to illustrate the
+        performance differences between representations. Mind that we only vary the action representation here.
+        Everything else (algorithms, dynamics etc.) is kept constant. Hyperparameters are optimized per representation
+        to ensure a fair comparison. The full comparisons are available in the paper.
+
+        <div class="grid grid-cols-2 gap-4 my-8">
+          <figure>
+            <img src="ppo_rotations_dense_rel.png" alt="PPO training curves with dense rewards" class="w-full">
+            <figcaption class="text-center text-xs text-gray-600 mt-2">PPO with dense rewards</figcaption>
+          </figure>
+          <figure>
+            <img src="td3_rotations_sparse_rel.png" alt="TD3 training curves with sparse rewards" class="w-full">
+            <figcaption class="text-center text-xs text-gray-600 mt-2">TD3 with sparse rewards</figcaption>
+          </figure>
+        </div>
+
       </div>
     </section>
 
@@ -122,26 +252,141 @@
     <section id="explaining-results">
       <h2 class="text-3xl font-bold mb-6">Explaining the Results</h2>
       <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
-      </div>
-      <!-- Interactive visualizations will be added here -->
-      <div id="exploration-viz" class="my-8 bg-white p-6 rounded-lg shadow"></div>
-      <div id="entropy-viz" class="my-8 bg-white p-6 rounded-lg shadow"></div>
-    </section>
+        <h4 class="text-lg font-semibold mb-2 mt-6">Distribution warping</h4>
+        <p class="text-base leading-relaxed mb-4">
+          When you sample exploration noise from a Gaussian distribution and project it onto SO(3), the resulting
+          distribution of rotations depends heavily on your representation. These visualizations show 1000 random
+          samples
+          inside the unit sphere for different representations, demonstrating how the same Gaussian noise leads to
+          different exploration patterns.
+        </p>
+        <div class="grid grid-cols-2 gap-4 my-8">
+          <div>
+            <h5 class="text-center font-semibold mb-2">Tangent (Local Frame)</h5>
+            <div id="distribution-viz-tangent" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+            <div class="px-4 py-3">
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.5</span>
+              </div>
+              <input type="range" id="slider-tangent" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+            </div>
+          </div>
+          <div>
+            <h5 class="text-center font-semibold mb-2">Rotation Matrix</h5>
+            <div id="distribution-viz-matrix" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+            <div class="px-4 py-3">
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.5</span>
+              </div>
+              <input type="range" id="slider-matrix" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+            </div>
+          </div>
+          <div>
+            <h5 class="text-center font-semibold mb-2">Quaternion</h5>
+            <div id="distribution-viz-quaternion" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+            <div class="px-4 py-3">
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.5</span>
+              </div>
+              <input type="range" id="slider-quaternion" min="0.3" max="5.0" step="0.1" value="0.5"
+                class="w-full slider">
+            </div>
+          </div>
+          <div>
+            <h5 class="text-center font-semibold mb-2">Euler Angles</h5>
+            <div id="distribution-viz-euler" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+            <div class="px-4 py-3">
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.5</span>
+              </div>
+              <input type="range" id="slider-euler" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+            </div>
+          </div>
+        </div>
+        <h4 class="text-lg font-semibold mb-2 mt-8">Conflicting gradients for multi-covers</h4>
 
-    <!-- Benchmarks -->
-    <section id="benchmarks">
-      <h2 class="text-3xl font-bold mb-6">Benchmarks</h2>
-      <div class="prose prose-lg max-w-none">
-        <p class="text-lg leading-relaxed">Content will be added here...</p>
+        <figure class="my-6">
+          <img src="sac_double_cover.svg" alt="SAC critic Q-values for quaternion double-cover"
+            class="w-full max-w-2xl mx-auto">
+          <figcaption class="text-center text-sm text-gray-600 mt-2">Actual Q-values predicted by the critic for
+            quaternion
+            actions around the manifold. The critic indeed learns the double cover, producing conflicting gradients.
+          </figcaption>
+        </figure>
+
+        <h4 class="text-lg font-semibold mb-2">Misguided entropy regularization</h4>
+        <h4 class="text-lg font-semibold mb-2">Limiting actions</h4>
+
+        <!-- Benchmarks -->
+        <section id="benchmarks">
+          <h2 class="text-3xl font-bold mb-6">Benchmarks</h2>
+          <div class="prose prose-lg max-w-none">
+            The idealized environment isolates rotation representations, but real robots deal with much messier
+            scenarios.
+            We tested the representations on three actual robotics benchmarks to see if our findings hold up when
+            orientation control is mixed with position control, contact dynamics, and physical constraints.
+
+
+            <h3 class="text-2xl font-semibold mb-4 mt-8">Drone Control</h3>
+            Drone control is an interesting test case because attitude control is a typical interface type, and because
+            the
+            unstable dynamics add complexity beyond our idealized environment. We evaluate on two tasks, trajectory
+            tracking
+            and drone racing, using <a href="https://github.com/utiasDSL/crazyflow" target="_blank"
+              class="text-blue-600 hover:text-blue-800">Crazyflow</a> as simulator.
+            <div class="grid grid-cols-2 gap-4 my-6">
+              <figure>
+                <img src="figure8.png" alt="Drone trajectory tracking results" class="w-full">
+                <figcaption class="text-center text-xs text-gray-600 mt-2">Trajectory tracking</figcaption>
+              </figure>
+              <figure>
+                <img src="racing.png" alt="Drone racing results" class="w-full">
+                <figcaption class="text-center text-xs text-gray-600 mt-2">Drone racing</figcaption>
+              </figure>
+            </div>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-8">Goal-Conditioned Manipulation</h3>
+            Our second benchmark modifies the popular <a href="https://robotics.farama.org/envs/fetch/index.html"
+              target="_blank" class="text-blue-600 hover:text-blue-800">Fetch</a> environments from OpenAI with
+            orientation
+            goals, testing two tasks: reaching a target pose and picking and placing an object at a target pose.
+            <div class="grid grid-cols-2 gap-4 my-6">
+              <figure>
+                <img src="reach.png" alt="ReachOrient task results" class="w-full">
+                <figcaption class="text-center text-xs text-gray-600 mt-2">ReachOrient</figcaption>
+              </figure>
+              <figure>
+                <img src="pick.png" alt="PickAndPlaceOrient task results" class="w-full">
+                <figcaption class="text-center text-xs text-gray-600 mt-2">PickAndPlaceOrient</figcaption>
+              </figure>
+            </div>
+
+            <h3 class="text-2xl font-semibold mb-4 mt-8">Robot Manipulation (RoboSuite)</h3>
+            <figure class="my-6">
+              <img src="robosuite_bar.png" alt="RoboSuite benchmark results" class="w-full max-w-4xl mx-auto">
+              <figcaption class="text-center text-sm text-gray-600 mt-2">Performance across nine manipulation tasks
+              </figcaption>
+            </figure>
+
+          </div>
+        </section>
+
+        </p>
       </div>
+    </section>
     </section>
   </main>
 
   <!-- Footer -->
   <footer class="bg-gray-900 text-white py-8 mt-16">
     <div class="container mx-auto px-6 text-center">
-      <p>&copy; 2026 SO(3) Primer. All rights reserved.</p>
+      <p>A Primer on SO(3) Action Representations in Deep Reinforcement Learning. Martin Schuck, Sherif Samy, Angela P.
+        Schoellig. ICLR 2026.
+      </p>
     </div>
   </footer>
 
