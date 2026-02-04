@@ -23,7 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Large media files (add to Git LFS if needed)
+# Large media files
 public/video/*.mp4
+!public/video/racing.mp4
 public/video/*.webm
 # Note: public/paper.pdf (25MB) should be tracked with Git LFS or hosted externally

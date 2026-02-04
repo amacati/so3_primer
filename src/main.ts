@@ -2,6 +2,18 @@ import './style.css'
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
+// Hero video autoplay - wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', () => {
+  const heroVideo = document.getElementById('hero-video') as HTMLVideoElement;
+  if (heroVideo) {
+    // Ensure the video loads and plays
+    heroVideo.load();
+    heroVideo.play().catch(err => {
+      console.error('Video autoplay failed:', err);
+    });
+  }
+});
+
 // BibTeX Modal functionality
 const bibtexBtn = document.getElementById('bibtex-btn');
 const bibtexModal = document.getElementById('bibtex-modal');
@@ -287,8 +299,8 @@ function createDistributionVisualization(containerId: string, representation: st
     scene.add(points);
   }
 
-  // Generate initial points with std dev = 0.5
-  generatePoints(0.5);
+  // Generate initial points with std dev = 0.3
+  generatePoints(0.3);
 
   // Set up slider
   const slider = document.getElementById(`slider-${representation}`) as HTMLInputElement;

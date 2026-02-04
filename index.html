@@ -14,12 +14,11 @@
 
 <body class="bg-gray-50 text-gray-900">
   <!-- Hero Video Section -->
-  <section id="hero" class="relative w-full h-screen overflow-hidden">
-    <video id="hero-video" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline>
-      <source src="/video/hero.mp4" type="video/mp4">
-      <source src="/video/hero.webm" type="video/webm">
+  <section id="hero" class="relative w-full overflow-hidden bg-black flex items-center justify-center"
+    style="height: 73vh;">
+    <video id="hero-video" class="w-full h-full object-cover" autoplay loop muted playsinline>
+      <source src="/video/racing.mp4" type="video/mp4">
     </video>
-    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
   </section>
 
   <!-- Title and Links Section -->
@@ -155,65 +154,6 @@
         <h3 class="text-xl font-semibold mb-4 text-gray-600">TLDR: Use tangent vectors (i.e. axis-angles) in the local
           frame</h3>
 
-        <!-- <p class="text-lg leading-relaxed mb-4">
-          After running extensive experiments across PPO, SAC, and TD3 with different SO(3) representations, we tested
-          several hypotheses about what makes rotation actions work well in RL. Here's what we found:
-        </p>
-
-        <div class="space-y-4">
-          <div>
-            <h4 class="text-lg font-semibold mb-2">1. Smoothness and uniqueness matter, but not everywhere</h4>
-            <p class="text-base leading-relaxed mb-4">
-              We expected smooth, unique representations like rotation matrices to dominate. They do perform well, but
-              local tangent vectors consistently outperform them despite having singularities at large angles. The key
-              insight: those singularities don't matter if they're outside your agent's action range. When you limit
-              rotation magnitudes per step (as most physical systems do), the tangent space stays smooth and
-              well-behaved in practice.
-            </p>
-
-          </div>
-
-          <div>
-            <h4 class="text-lg font-semibold mb-2">2. Projections warp exploration in surprising ways</h4>
-            <p class="text-base leading-relaxed">
-              Standard Gaussian exploration noise gets heavily distorted when you project it onto SO(3). Euler angles
-              concentrate samples around gimbal-lock singularities. Quaternions and matrices spread samples nearly
-              uniformly at initialization, making early exploration chaotic. Local tangent vectors suffer least from
-              this, keeping exploration relatively well-behaved. This effect is especially pronounced in sparse reward
-              settings where exploration matters most.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="text-lg font-semibold mb-2">3. Entropy regularization has unintended consequences</h4>
-            <p class="text-base leading-relaxed">
-              SAC and PPO maximize entropy in Euclidean space, but after projection, higher Euclidean norms don't
-              necessarily mean more diverse rotations. For tangent vectors, large magnitudes just hit the action limit
-              more often. For matrices and quaternions, entropy maximization drives actions toward regions that appear
-              random in ℝ<sup>n</sup> but map to stable rotation directions. Scaling tangent vectors to the permissible
-              range helps mitigate this.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="text-lg font-semibold mb-2">4. Unit-centering helps delta actions for unstable systems</h4>
-            <p class="text-base leading-relaxed">
-              For delta actions with matrices or quaternions, zero-centered network outputs don't map to zero rotation.
-              Custom initialization that adds the identity rotation improves PPO performance noticeably, but shows mixed
-              results for SAC and TD3. Delta tangent and Euler representations naturally center around no rotation, so
-              they don't need this fix.
-            </p>
-          </div>
-
-          <div>
-            <h4 class="text-lg font-semibold mb-2">5. Scaling tangent vectors improves stability</h4>
-            <p class="text-base leading-relaxed">
-              Restricting tangent vector norms to the maximum rotation angle eliminates discontinuities at the cut locus
-              and gives finer control in the relevant range. The improvement is modest for PPO with dense rewards but
-              becomes more relevant in sparse reward settings.
-            </p>
-          </div>
-        </div> -->
         <ul class="list-disc list-inside space-y-2 text-base leading-relaxed">
           <li><strong>Default choice:</strong> Delta tangent vectors in the local frame. Scale outputs to the range of
             permissible rotations.</li>
@@ -254,11 +194,17 @@
       <div class="prose prose-lg max-w-none">
         <h4 class="text-lg font-semibold mb-2 mt-6">Distribution warping</h4>
         <p class="text-base leading-relaxed mb-4">
-          When you sample exploration noise from a Gaussian distribution and project it onto SO(3), the resulting
-          distribution of rotations depends heavily on your representation. These visualizations show 1000 random
-          samples
-          inside the unit sphere for different representations, demonstrating how the same Gaussian noise leads to
-          different exploration patterns.
+        <p class="text-base leading-relaxed mb-4">
+          Most RL algorithms rely on sampling exploration noise from a simple distribution (e.g. Gaussian) in the action
+          space. Algorithms like PPO rely on small initial logstandards to encourage local exploration. However,
+          Gaussian noise in the raw action space gets heavily distorted when projected onto SO(3).
+        </p>
+        <p class="text-base leading-relaxed mb-4">
+          Here we show how the same Gaussian noise limited to [-1, 1] with a Tanh activation and projected onto SO(3)
+          leads to very different distributions of rotations for different action spaces. This explains e.g. why
+          quaternions and rotation matrices perform poorly at initialization: the noise is nearly uniform across the
+          representation space, leading to chaotic exploration.
+        </p>
         </p>
         <div class="grid grid-cols-2 gap-4 my-8">
           <div>
@@ -267,9 +213,9 @@
             <div class="px-4 py-3">
               <div class="flex justify-between items-center mb-2">
                 <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.5</span>
+                <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.3</span>
               </div>
-              <input type="range" id="slider-tangent" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+              <input type="range" id="slider-tangent" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
           </div>
           <div>
@@ -278,9 +224,9 @@
             <div class="px-4 py-3">
               <div class="flex justify-between items-center mb-2">
                 <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.5</span>
+                <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.3</span>
               </div>
-              <input type="range" id="slider-matrix" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+              <input type="range" id="slider-matrix" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
           </div>
           <div>
@@ -289,9 +235,9 @@
             <div class="px-4 py-3">
               <div class="flex justify-between items-center mb-2">
                 <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.5</span>
+                <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.3</span>
               </div>
-              <input type="range" id="slider-quaternion" min="0.3" max="5.0" step="0.1" value="0.5"
+              <input type="range" id="slider-quaternion" min="0.1" max="5.0" step="0.1" value="0.3"
                 class="w-full slider">
             </div>
           </div>
@@ -301,14 +247,31 @@
             <div class="px-4 py-3">
               <div class="flex justify-between items-center mb-2">
                 <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.5</span>
+                <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.3</span>
               </div>
-              <input type="range" id="slider-euler" min="0.3" max="5.0" step="0.1" value="0.5" class="w-full slider">
+              <input type="range" id="slider-euler" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
           </div>
         </div>
+        <p class="text-sm text-gray-600 italic mt-4">
+          Note: Ideally, we would visualize quaternions on a 4D sphere (S³), but since this is impossible to directly
+          visualize, we instead show the resulting SO(3) samples in axis-angle (tangent) space for all representations.
+        </p>
         <h4 class="text-lg font-semibold mb-2 mt-8">Conflicting gradients for multi-covers</h4>
-
+        <p class="text-base leading-relaxed mb-4">
+          One intuition behind avoiding quaternions is their double-cover property: each rotation corresponds to two
+          antipodal points on the 4D unit sphere. Unfortunately, the double-cover quaternion is antiparallel in
+          Euclidean space, driving network outputs in the exact opposite direction. This can lead to conflicting
+          gradients during learning.
+        </p>
+        <p class="text-base leading-relaxed mb-4">
+          But does this actually happen in practice? If the critic doesn't learn that both quaternions are valid
+          solutions, we would never see conflicting gradients. To investigate this, we visualize the Q-values predicted
+          by a trained SAC critic for actions interpolating from the optimal quaternion action to its double-cover and
+          back. As can be seen, the critic correctly learns to assign both quaternions high Q-values with a dip in
+          between, which indeed leads to conflicting gradients for the actor and explains why quaternions are a
+          suboptimal action representation.
+        </p>
         <figure class="my-6">
           <img src="sac_double_cover.svg" alt="SAC critic Q-values for quaternion double-cover"
             class="w-full max-w-2xl mx-auto">
@@ -319,7 +282,34 @@
         </figure>
 
         <h4 class="text-lg font-semibold mb-2">Misguided entropy regularization</h4>
+        <p class="text-base leading-relaxed mb-4">
+          The action noise distribution shown above directly leads to another problem. While we regularize the entropy
+          of the action distribution in Euclidean space, the resulting distribution on SO(3) can look very different.
+          Distributions with more entropy in Euclidean space (large σ) can actually have less entropy on SO(3) than more
+          concentrated distributions (small σ). For many representations, the bonus drives the policy towards select
+          actions with larger magnitudes, which causes jittery behavior and poorer exploration.
+        </p>
         <h4 class="text-lg font-semibold mb-2">Limiting actions</h4>
+        <p class="text-base <leading-relaxed mb-4">
+          Physical systems cannot rotate arbitrarily fast. Thus, we can often limit the action space to a maximum
+          rotation angle per timestep (α<sub>max</sub>, red circle). But how do we scale different representations to
+          this limit? We cannot remap quaternions or rotation matrices without loosing their smoothness properties.
+          Euler angles can be scaled, but the scaling non-linearly dependents <strong>on the current state</strong>.
+        </p>
+        <p class="text-base leading-relaxed mb-4">
+          Tangent vectors (axis-angles) on the other hand naturally scale with rotation magnitude, making it
+          straightforward to limit actions. You can see the idea in the figure below. Multiplying your bounded
+          axis-angle actions (outer gray plane) by α<sub>max</sub> limits the maximum rotation to almost
+          the real action limit of α<sub>max</sub> (inner gray plane). While some edges remain outside the limit
+          (compare the corners of the inner gray plane to the gray circle representing the action limit projected onto
+          the tangent space), these do not cause issues in practice.
+        </p>
+        <figure class="my-6">
+          <img src="limited_action.svg" alt="Action limiting comparison across representations"
+            class="w-full max-w-xs mx-auto">
+          <figcaption class="text-center text-sm text-gray-600 mt-2">Action limiting effectiveness varies across
+            representations. Tangent vectors naturally scale with rotation magnitude.</figcaption>
+        </figure>
 
         <!-- Benchmarks -->
         <section id="benchmarks">
