@@ -1,0 +1,88 @@
+[checkpoint]
+path = "saves/chain"
+
+[wandb]
+project = "rotation_chain"
+group = "a:euler|o:euler"
+entity = "lsy-tum"
+
+[env]
+name = "ChainedRotation-v0"
+n_envs = 32
+[env.kwargs]
+n_rot = 2
+action_type = "euler"
+obs_type = "euler"
+
+[train]
+period = 1600
+steps = 40
+actor_period = 1
+actor_target_period = 40
+critic_period = 1
+critic_target_period = 40
+batch_size = 4096
+grad_clip = 5.0
+reward_clip = [-50.0, 0.0]
+gamma = 0.98
+tau = 0.05
+actor_lr = 0.001
+critic_lr = 0.001
+device = "cuda"
+
+[rollout]
+max_samples = 1_000_000
+replay_buffer_cls = "HerVectorReplayBuffer"
+[rollout.replay_buffer_kwargs]
+max_size = 500_000
+reward_fn = ""
+device = "cuda"
+[[rollout.action_transform]]
+type = "ChoiceTF"
+[rollout.action_transform.kwargs]
+prob = [0.7, 0.3]
+
+[[rollout.action_transform.kwargs.transforms]]
+type = "AdditiveNoiseTF"
+[rollout.action_transform.kwargs.transforms.kwargs.noise]
+type = "NormalNoise"
+[rollout.action_transform.kwargs.transforms.kwargs.noise.kwargs]
+mean = 0.0
+std = 0.2
+
+[[rollout.action_transform.kwargs.transforms]]
+type = "ReplaceWithNoiseTF"
+[rollout.action_transform.kwargs.transforms.kwargs.noise]
+type = "UniformNoise"
+[rollout.action_transform.kwargs.transforms.kwargs.noise.kwargs]
+min = -1.0
+max = 1.0
+
+[[rollout.action_transform]]
+type = "ClipTF"
+[rollout.action_transform.kwargs]
+min = -1.0
+max = 1.0
+
+# For quat plus: 
+# [[rollout.action_transform.kwargs.transforms]]
+# type = "ReplaceWithNoiseTF"
+# [rollout.action_transform.kwargs.transforms.kwargs.noise]
+# type = "UniformNoise"
+# [rollout.action_transform.kwargs.transforms.kwargs.noise.kwargs]
+# # x, y, z, w -> w is always positive in quat_plus
+# min = [-1.0, -1.0, -1.0, 0.0, -1, -1, -1, 0]
+# max = [1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1]
+
+# [[rollout.action_transform]]
+# type = "ClipTF"
+# [rollout.action_transform.kwargs]
+# # x, y, z, w -> w is always positive in quat_plus
+# min = [-1.0, -1.0, -1.0, 0.0, -1, -1, -1, 0]
+# max = [1.0, 1.0, 1.0, 1.0, 1, 1, 1, 1]
+
+
+[eval]
+success_criteria = 0
+period = 6_400
+steps = 8_000

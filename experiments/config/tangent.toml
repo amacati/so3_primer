@@ -1,0 +1,69 @@
+[checkpoint]
+path = "saves/tangent"
+
+[wandb]
+project = "rotations_v2"
+group = "tangent"
+entity = "lsy-tum"
+
+[env]
+name = "Rotation-v0"
+n_envs = 32
+[env.kwargs]
+action_type = "tangent"
+obs_type = "quat"
+
+[train]
+period = 1600
+steps = 40
+actor_period = 1
+actor_target_period = 40
+critic_period = 1
+critic_target_period = 40
+batch_size = 4096
+grad_clip = 5.0
+reward_clip = [-50.0, 0.0]
+gamma = 0.98
+tau = 0.05
+actor_lr = 0.001
+critic_lr = 0.001
+device = "cuda"
+
+[rollout]
+max_samples = 200_000
+replay_buffer_cls = "HerVectorReplayBuffer"
+[rollout.replay_buffer_kwargs]
+max_size = 200_000
+reward_fn = ""
+device = "cuda"
+[[rollout.action_transform]]
+type = "ChoiceTF"
+[rollout.action_transform.kwargs]
+prob = [0.7, 0.3]
+
+[[rollout.action_transform.kwargs.transforms]]
+type = "AdditiveNoiseTF"
+[rollout.action_transform.kwargs.transforms.kwargs.noise]
+type = "NormalNoise"
+[rollout.action_transform.kwargs.transforms.kwargs.noise.kwargs]
+mean = 0.0
+std = 0.2
+
+[[rollout.action_transform.kwargs.transforms]]
+type = "ReplaceWithNoiseTF"
+[rollout.action_transform.kwargs.transforms.kwargs.noise]
+type = "UniformNoise"
+[rollout.action_transform.kwargs.transforms.kwargs.noise.kwargs]
+min = -1.0
+max = 1.0
+
+[[rollout.action_transform]]
+type = "ClipTF"
+[rollout.action_transform.kwargs]
+min = -1.0
+max = 1.0
+
+[eval]
+success_criteria = 0
+period = 6_400
+steps = 8_000

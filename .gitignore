@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Python
+**/__pycache__/
+**/*.pt
+saves
+.pixi
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,9 +29,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Large media files
-public/video/*.mp4
-!public/video/racing.mp4
-public/video/*.webm
-# Note: public/paper.pdf (25MB) should be tracked with Git LFS or hosted externally

@@ -1,0 +1,147 @@
+[project]
+name = "rotations"
+version = "0.0.1"
+readme = "README.md"
+dependencies = [
+    "gymnasium >= 1.0",
+    "numpy >= 1.26.4",
+    "matplotlib >= 3.8.4",
+    "scipy >= 1.13.1",
+    "fire >= 0.6.0",
+    "torch >= 2.0.0",
+    "tensordict >= 0.1.2",
+    "wandb",
+    "jax[cuda] >= 0.5, <= 0.7",
+    "flax",
+    "munch",
+    "ml-collections",
+    "array-api-compat"
+]
+# Caused by window capture. TODO: Move window capture to own package and relax requirements
+# random.choice does not work with numpy on 3.11.0/1 (https://github.com/python/cpython/issues/100805)
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["rotations"]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "docs/conf.py",
+]
+
+line-length = 100
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "D", "TCH", "ANN"]
+ignore = ["ANN401", "D", "ANN"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"experiments/*" = ["D"]
+"rotations/*" = ["D"]
+"tests/*" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-annotations]
+suppress-dummy-args = true
+suppress-none-returning = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.pytest.ini_options]
+markers = ["unit", "integration"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.pypi-dependencies]
+rotations = { path = ".", editable = true }
+lsy_rl = { git = "https://github.com/amacati/lsy_rl.git", rev = "5676d2e" }
+
+[tool.pixi.feature.her.pypi-dependencies]
+mujoco = ">=3.3"
+mujoco-mjx = ">=3.3"
+imageio = ">=2.9"
+gymnasium-robotics = ">=1.4"
+# If this does not work, manually update gymnasium with 
+# uv pip install "gymnasium@https://github.com/Farama-Foundation/Gymnasium.git"
+gymnasium = { git = "https://github.com/Farama-Foundation/Gymnasium.git", rev = "0f8ff43", extras = ["array-api"], editable = true }  # Switch to 1.3 when released, fixes device transfer for torch
+
+[tool.pixi.environments]
+her = { features = ["her"] }
+robosuite = ["robosuite"]
+crazyflow = ["crazyflow"]
+droneracing = ["droneracing"]
+
+[tool.pixi.dependencies]
+pyvista = ">=0.45.2,<0.46"
+tqdm = ">=4.67.1,<5"
+toml = ">=0.10.2,<0.11"
+pytest = ">=8.4.0,<9"
+seaborn = ">=0.13.2,<0.14"
+
+[tool.pixi.activation.env]
+PYTHONNOUSERSITE = "1"
+
+# Setup environment for the Robosuite benchmark
+[tool.pixi.feature.robosuite.dependencies]
+python = "==3.10"
+
+[tool.pixi.feature.robosuite.pypi-dependencies]
+robosuite = "==1.5.1"
+mujoco = ">=3.3.5,<4"
+h5py = ">=3.14.0,<4"
+lark = ">=1.2.2,<2"
+imageio = { version = ">=2.37.0,<3", extras = ["ffmpeg"] }
+
+# Setup environment for the Crazyflow benchmark
+[tool.pixi.feature.crazyflow.dependencies]
+python = ">=3.11"
+
+[tool.pixi.feature.crazyflow.pypi-dependencies]
+crazyflow = "==0.0.2"
+imageio = { version = ">=2.37.0,<3", extras = ["ffmpeg"] }
+
+# Setup environment for the Drone Racing benchmark
+[tool.pixi.feature.droneracing.pypi-dependencies]
+lsy_drone_racing = { git = "https://github.com/utiasDSL/lsy_drone_racing.git", rev = "57e60e4" }
+imageio = { version = ">=2.37.0,<3", extras = ["ffmpeg"] }

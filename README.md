@@ -1,40 +1,54 @@
-# Primer on SO(3) Action Representations in Deep RL - Website
+# Primer on SO(3) Action Representations in Deep RL
+[![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![GitHub Pages](https://img.shields.io/badge/github_page-website-blue?logo=github)](https://amacati.github.io/so3_primer/)
+[![arXiv](https://img.shields.io/badge/arXiv-2510.11103-b31b1b.svg)](https://arxiv.org/abs/2510.11103)
 
-This repository hosts the project website for **"A Primer on SO(3) Action Representations in Deep Reinforcement Learning"**.
+
+This repository contains the source code for **"A Primer on SO(3) Action Representations in Deep Reinforcement Learning"**.
+
+## Links
+
+- **Paper**: [ArXiv](https://arxiv.org/abs/2510.11103)
+- **Code**: [GitHub Repository](https://github.com/amacati/so3_primer)
+- **Website**: [amacati.github.io/so3_primer](https://amacati.github.io/so3_primer/)
 
 ## About the Paper
 
 This work provides a comprehensive primer on leveraging SO(3) rotation representations in deep reinforcement learning for robotic manipulation tasks. The paper addresses the fundamental challenge of how to properly represent 3D rotations as actions in policy networks, examining various parametrizations and their implications for learning efficiency and task performance.
 
-## Website
+## Running the Experiments
 
-The website features:
-- Overview of SO(3) rotation representations
-- Key findings and recommendations
-- Interactive visualizations
-- Links to paper, code, and citation information
+### Setup
 
-## Quick Start
-
+Install dependencies using Pixi:
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+pixi install
 ```
 
-Visit `http://localhost:5173/so3_primer/` to see the website.
+### WandB Configuration
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
+Hyperparameter sweeps require WandB. Place your API key at `secrets/wandb_api_key.secret` (relative to the repository root). This file is automatically excluded from version control.
 
-## Building for Production
+### Idealized Rotation Tasks
+
+The experiments for the idealized rotation tasks are located in the `experiments/` folder. To run a specific algorithm, use the following command:
 
 ```bash
-npm run build
+pixi run python experiments/<algorithm>/<algorithm>.py -a <action_representation> -c <abs|rel>
 ```
 
-The static site will be generated in the `dist/` directory, ready for deployment to GitHub Pages.
+Experiments automatically use the configuration files located in `experiments/<algorithm>/config/` to load hyperparameters.Available algorithms: `ppo`, `sac`, `td3`. To run sweeps, use the `sweep.py` scripts in the respective algorithm folders.
+
+### Robotics Benchmarks
+
+The robotics benchmark experiments are located in the `benchmarks/` folder. They include:
+- `crazyflow`: A trajectory following task (figure 8) using crazyflie drones.
+- `droneracing`: Drone racing similar to the IROS 2022 Safe Robot Learning Competition using crazyflie drones.
+- `her_orient`: Fetch-like robotic arm tasks, one for orienting the end-effector into a target position and orientation, and one for picking up a block and placing it onto a target position and orientation. Solved using HER.
+- `robosuite`: Our adapted version of the robotic manipulation tasks from the [RoboSuite benchmark](https://robosuite.ai/) that enables swapping out the action representation for the end-effector orientation.
+
+We provide pixi environments for all benchmarks (see [pyproject.toml](pyproject.toml)). All benchmarks come with configuration files that specify the hyperparameters.
 
 ## Citation
 
@@ -49,17 +63,3 @@ If you find this work useful, please cite our paper:
     year={2026},
 }
 ```
-
-## Links
-
-- **Paper**: [ArXiv](https://arxiv.org/abs/2510.11103)
-- **Code**: [GitHub Repository](https://github.com/amacati/so3_primer)
-
-## Tech Stack
-
-- **Vite** - Fast build tool and development server
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first styling
-- **Three.js** - 3D visualizations for rotation representations
-- **D3.js** - Interactive charts and plots
-- **KaTeX** - Mathematical notation rendering

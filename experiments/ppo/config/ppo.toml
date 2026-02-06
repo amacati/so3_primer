@@ -1,0 +1,106 @@
+[checkpoint]
+path = "saves/ppo"
+
+[wandb]
+project = "rot|ppo"
+group = ""
+entity = "lsy-tum"
+
+[env]
+name = "Rotation-v0"
+n_envs = 32
+[env.kwargs]
+device = "gpu"
+action_type = "tangent"
+obs_type = "tangent"
+control_mode = "rel"
+
+[ppo]
+n_steps = 50            # period = 1600
+n_minibatches = 10
+n_total_steps = 400_000
+actor_lr = 0.001
+critic_lr = 0.001
+n_epochs = 10
+
+eval_period = 6400
+n_eval_steps = 16_000
+# checkpoint_period = 4_000 
+# overwrite_policy = false
+
+clip_coef = 0.2
+ent_coef = 0.01
+vf_coef = 0.5
+max_grad_norm = 1.0
+target_kl = -1      # Toml doesn't support None
+gamma = 0.99
+norm_adv = true
+clip_vloss = true
+gae_lambda = 0.95
+device = "cuda"
+use_logstd_net = false
+
+[overrides]
+[overrides.tangent-matrix]  # https://wandb.ai/lsy-tum/rot%7Cppo_sweep/runs/7ma2fyjn/overview
+actor_lr = 9.16e-4
+clip_coef = 0.130
+critic_lr = 2.18e-3
+ent_coef = 0.013
+gae_lambda = 0.800
+gamma = 0.916
+max_grad_norm = 0.602
+n_epochs = 20
+n_minibatches = 8
+n_steps = 100
+vf_coef = 0.740
+
+[overrides.euler-matrix]  # https://wandb.ai/lsy-tum/rot%7Cppo_sweep/runs/16yhni5s/overview
+actor_lr = 6.80e-4
+clip_coef = 0.238
+critic_lr = 1.30e-4
+ent_coef = 5.84e-5
+gae_lambda = 0.813
+gamma = 0.906
+max_grad_norm = 0.540
+n_epochs = 20
+n_minibatches = 16
+n_steps = 100
+
+[overrides.matrix-matrix]  # https://wandb.ai/lsy-tum/rot%7Cppo_sweep/runs/hbq4v2pr/overview
+actor_lr = 1.07e-3
+clip_coef = 0.238
+critic_lr = 8.85e-4
+ent_coef = 0.027
+gae_lambda = 0.826
+gamma = 0.903
+max_grad_norm = 0.602
+n_epochs = 20
+n_minibatches = 16
+n_steps = 100
+vf_coef = 0.458
+
+[overrides.quat-matrix]  # https://wandb.ai/lsy-tum/rot%7Cppo_sweep/runs/ijadkz7l/overview
+actor_lr = 8.19e-4
+clip_coef = 0.220
+critic_lr = 9.94e-4
+ent_coef = 9.84e-4
+gae_lambda = 0.848
+gamma = 0.903
+max_grad_norm = 0.798
+n_epochs = 15
+n_minibatches = 8
+n_steps = 50
+vf_coef = 0.410
+
+[overrides.r6-matrix]  # https://wandb.ai/lsy-tum/rot%7Cppo_sweep/runs/b5ffo0wg?nw=nwuseru1999168
+actor_lr = 1.657e-4
+clip_coef = 0.257
+critic_lr = 1.147e-3
+ent_coef = 1.952e-2
+gae_lambda = 0.874
+gamma = 0.920
+max_grad_norm = 1.904
+n_epochs = 5
+n_minibatches = 32
+n_steps = 50
+vf_coef = 0.381
