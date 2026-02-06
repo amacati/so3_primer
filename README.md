@@ -1,4 +1,4 @@
-# Primer on SO(3) Action Representations in Deep RL
+# A Primer on SO(3) Action Representations in Deep RL
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![GitHub Pages](https://img.shields.io/badge/github_page-website-blue?logo=github)](https://amacati.github.io/so3_primer/)
@@ -6,16 +6,6 @@
 
 
 This repository contains the source code for **"A Primer on SO(3) Action Representations in Deep Reinforcement Learning"**.
-
-## Links
-
-- **Paper**: [ArXiv](https://arxiv.org/abs/2510.11103)
-- **Code**: [GitHub Repository](https://github.com/amacati/so3_primer)
-- **Website**: [amacati.github.io/so3_primer](https://amacati.github.io/so3_primer/)
-
-## About the Paper
-
-This work provides a comprehensive primer on leveraging SO(3) rotation representations in deep reinforcement learning for robotic manipulation tasks. The paper addresses the fundamental challenge of how to properly represent 3D rotations as actions in policy networks, examining various parametrizations and their implications for learning efficiency and task performance.
 
 ## Running the Experiments
 
