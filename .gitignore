@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Python files
+__pycache__/
+**/*.pyc
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -27,4 +31,8 @@ dist-ssr
 public/video/*.mp4
 !public/video/racing.mp4
 public/video/*.webm
-# Note: public/paper.pdf (25MB) should be tracked with Git LFS or hosted externally
+
+# Main repository files that should not be included in the website
+benchmarks
+rotations
+saves

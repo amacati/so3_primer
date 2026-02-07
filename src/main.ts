@@ -357,3 +357,167 @@ if (document.readyState === 'loading') {
 
 console.log('SO(3) Primer website loaded');
 
+// Benchmark switching functionality with slide animations
+let currentBenchmark = 'trajectory'; // Track the currently active benchmark
+let isAnimating = false; // Prevent multiple animations at once
+
+(window as any).showBenchmark = function (benchmarkName: string) {
+  // Prevent switching during animation
+  if (isAnimating || benchmarkName === currentBenchmark) {
+    return;
+  }
+
+  isAnimating = true;
+
+  // Get the current and new content elements
+  const currentContent = document.getElementById(`benchmark-${currentBenchmark}`);
+  const newContent = document.getElementById(`benchmark-${benchmarkName}`);
+  const wrapper = document.getElementById('benchmark-content-wrapper');
+
+  if (!currentContent || !newContent || !wrapper) {
+    isAnimating = false;
+    return;
+  }
+
+  // STEP 1: Capture current wrapper height before any position changes
+  const currentHeight = wrapper.offsetHeight;
+  wrapper.style.height = `${currentHeight}px`;
+
+  // Update button states immediately
+  const allButtons = document.querySelectorAll('.benchmark-btn');
+  allButtons.forEach(button => {
+    button.classList.remove('active');
+  });
+
+  const selectedButton = document.querySelector(`[data-benchmark="${benchmarkName}"]`);
+  if (selectedButton) {
+    selectedButton.classList.add('active');
+  }
+
+  // Start the slide-out animation for current content
+  currentContent.classList.remove('active');
+  currentContent.classList.add('slide-out-left');
+
+  // Start slide-in animation while slide-out is still in progress (overlapping for faster perceived transition)
+  setTimeout(() => {
+    // Remove slide-out animation and hide current content
+    currentContent.classList.remove('slide-out-left');
+
+    // Prepare new content for slide-in
+    newContent.classList.add('slide-in-right');
+
+    // Small delay to ensure the element is rendered
+    requestAnimationFrame(() => {
+      newContent.classList.add('active');
+
+      // STEP 2: Measure new content height and transition to it
+      requestAnimationFrame(() => {
+        const newHeight = newContent.offsetHeight;
+        wrapper.style.height = `${newHeight}px`;
+      });
+    });
+
+    // After slide-in completes
+    setTimeout(() => {
+      // Clean up animations
+      newContent.classList.remove('slide-in-right');
+
+      // STEP 3: Reset to auto height for responsive behavior
+      wrapper.style.height = 'auto';
+
+      // Update current benchmark tracker
+      currentBenchmark = benchmarkName;
+      isAnimating = false;
+    }, 250); // Match the animation duration
+  }, 175); // Start slide-in early while slide-out is still in progress
+};
+
+// Initialize the first benchmark as active on page load
+document.addEventListener('DOMContentLoaded', () => {
+  const firstBenchmark = document.getElementById('benchmark-trajectory');
+  if (firstBenchmark) {
+    firstBenchmark.classList.add('active');
+  }
+
+  // Initialize the first distribution as active
+  const firstDistribution = document.getElementById('distribution-tangent');
+  if (firstDistribution) {
+    firstDistribution.classList.add('active');
+  }
+});
+
+// Distribution switching functionality with slide animations
+let currentDistribution = 'tangent'; // Track the currently active distribution
+let isAnimatingDistribution = false; // Prevent multiple animations at once
+
+(window as any).showDistribution = function (distributionName: string) {
+  // Prevent switching during animation
+  if (isAnimatingDistribution || distributionName === currentDistribution) {
+    return;
+  }
+
+  isAnimatingDistribution = true;
+
+  // Get the current and new content elements
+  const currentContent = document.getElementById(`distribution-${currentDistribution}`);
+  const newContent = document.getElementById(`distribution-${distributionName}`);
+  const wrapper = document.getElementById('distribution-content-wrapper');
+
+  if (!currentContent || !newContent || !wrapper) {
+    isAnimatingDistribution = false;
+    return;
+  }
+
+  // STEP 1: Capture current wrapper height before any position changes
+  const currentHeight = wrapper.offsetHeight;
+  wrapper.style.height = `${currentHeight}px`;
+
+  // Update button states immediately
+  const allButtons = document.querySelectorAll('.distribution-btn');
+  allButtons.forEach(button => {
+    button.classList.remove('active');
+  });
+
+  const selectedButton = document.querySelector(`[data-distribution="${distributionName}"]`);
+  if (selectedButton) {
+    selectedButton.classList.add('active');
+  }
+
+  // Start the slide-out animation for current content
+  currentContent.classList.remove('active');
+  currentContent.classList.add('slide-out-left');
+
+  // Start slide-in animation while slide-out is still in progress (overlapping for faster perceived transition)
+  setTimeout(() => {
+    // Remove slide-out animation and hide current content
+    currentContent.classList.remove('slide-out-left');
+
+    // Prepare new content for slide-in
+    newContent.classList.add('slide-in-right');
+
+    // Small delay to ensure the element is rendered
+    requestAnimationFrame(() => {
+      newContent.classList.add('active');
+
+      // STEP 2: Measure new content height and transition to it
+      requestAnimationFrame(() => {
+        const newHeight = newContent.offsetHeight;
+        wrapper.style.height = `${newHeight}px`;
+      });
+    });
+
+    // After slide-in completes
+    setTimeout(() => {
+      // Clean up animations
+      newContent.classList.remove('slide-in-right');
+
+      // STEP 3: Reset to auto height for responsive behavior
+      wrapper.style.height = 'auto';
+
+      // Update current distribution tracker
+      currentDistribution = distributionName;
+      isAnimatingDistribution = false;
+    }, 250); // Match the animation duration
+  }, 125); // Start slide-in early while slide-out is still in progress (125ms overlap)
+};
+

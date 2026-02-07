@@ -101,3 +101,194 @@ body {
   transform: scale(1.05);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
+
+/* Benchmark button styling */
+.benchmark-btn {
+  background-color: rgb(219, 234, 254);
+  color: rgb(30, 64, 175);
+  border: 2px solid transparent;
+}
+
+.benchmark-btn:hover {
+  background-color: rgb(191, 219, 254);
+  transform: translateY(-1px);
+}
+
+.benchmark-btn.active {
+  background-color: rgb(37, 99, 235);
+  color: white;
+  border-color: rgb(29, 78, 216);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.benchmark-btn.active:hover {
+  background-color: rgb(29, 78, 216);
+}
+
+/* Benchmark content container setup */
+#benchmark-content-wrapper {
+  min-height: 400px;
+  position: relative;
+  transition: height 0.25s ease-in-out;
+}
+
+/* Benchmark content base styles */
+.benchmark-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Active benchmark content */
+.benchmark-content.active {
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+  visibility: visible;
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+}
+
+/* Slide out to left animation */
+.benchmark-content.slide-out-left {
+  position: absolute;
+  animation: slideOutLeft 0.25s ease-in-out forwards;
+  visibility: visible;
+}
+
+/* Slide in from right animation */
+.benchmark-content.slide-in-right {
+  position: absolute;
+  animation: slideInRight 0.25s ease-in-out forwards;
+  visibility: visible;
+}
+
+/* Keyframes for slide out left */
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+/* Keyframes for slide in right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Distribution button styling */
+.distribution-btn {
+  background-color: rgb(219, 234, 254);
+  color: rgb(30, 64, 175);
+  border: 2px solid transparent;
+}
+
+.distribution-btn:hover {
+  background-color: rgb(191, 219, 254);
+  transform: translateY(-1px);
+}
+
+.distribution-btn.active {
+  background-color: rgb(37, 99, 235);
+  color: white;
+  border-color: rgb(29, 78, 216);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.distribution-btn.active:hover {
+  background-color: rgb(29, 78, 216);
+}
+
+/* Distribution content container setup */
+#distribution-content-wrapper {
+  min-height: 400px;
+  position: relative;
+  transition: height 0.25s ease-in-out;
+}
+
+/* Aspect ratio container for rounded white boxes */
+.aspect-ratio-container {
+  /* Max aspect ratio of 3:2 (width:height) */
+  /* This means max-height = (2/3) * width */
+  max-height: calc((100vw - 3rem) * 0.667); /* Account for container padding */
+  overflow-y: auto;
+}
+
+/* For wider screens with max-width container */
+@media (min-width: 1280px) {
+  .aspect-ratio-container {
+    /* Container max-width is 72rem (1152px) */
+    max-height: calc(72rem * 0.667);
+  }
+}
+
+/* For tablets and medium screens */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .aspect-ratio-container {
+    /* Account for container padding: 100vw - (2 * 1.5rem horizontal padding) */
+    max-height: calc((100vw - 3rem) * 0.667);
+  }
+}
+
+/* For mobile devices - use smaller aspect ratio for better readability */
+@media (max-width: 767px) {
+  .aspect-ratio-container {
+    /* Use 4:3 aspect ratio on mobile (more square) */
+    /* Account for mobile padding */
+    max-height: calc((100vw - 3rem) * 0.75);
+  }
+}
+
+/* Distribution content base styles */
+.distribution-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Active distribution content */
+.distribution-content.active {
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+  visibility: visible;
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+}
+
+/* Slide out to left animation */
+.distribution-content.slide-out-left {
+  position: absolute;
+  animation: slideOutLeft 0.25s ease-in-out forwards;
+  visibility: visible;
+}
+
+/* Slide in from right animation */
+.distribution-content.slide-in-right {
+  position: absolute;
+  animation: slideInRight 0.25s ease-in-out forwards;
+  visibility: visible;
+}

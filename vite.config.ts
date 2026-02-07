@@ -2,6 +2,16 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
     base: '/so3_primer/',
+    server: {
+        watch: {
+            ignored: [
+                '**/.pixi/**',
+                '**/benchmarks/**',
+                '**/rotations/**',
+                '**/saves/**'
+            ]
+        }
+    },
     build: {
         outDir: 'dist',
         assetsDir: 'assets',
