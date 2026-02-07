@@ -17,7 +17,7 @@ dist-ssr
 **/*.pt
 saves
 .pixi
-
+rotations.egg-info
 
 # Editor directories and files
 .vscode/*
