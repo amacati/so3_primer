@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth overflow-x-hidden">
 
 <head>
   <meta charset="UTF-8" />
@@ -10,17 +10,18 @@
   <title>A Primer on SO(3) Action Representations in Deep RL</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
     integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
-  <script type="module" crossorigin src="/so3_primer/assets/index-J3qnyNgo.js"></script>
+  <script type="module" crossorigin src="/so3_primer/assets/index-D5xr3vcM.js"></script>
   <link rel="modulepreload" crossorigin href="/so3_primer/assets/three-BEkFM43v.js">
-  <link rel="stylesheet" crossorigin href="/so3_primer/assets/index-DvKuXqTV.css">
+  <link rel="stylesheet" crossorigin href="/so3_primer/assets/index-DRnGBtjZ.css">
 </head>
 
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 overflow-x-hidden">
   <!-- Hero Video Section -->
   <section id="hero" class="relative w-full overflow-hidden bg-black flex items-center justify-center"
-    style="height: 73vh;">
-    <video id="hero-video" class="w-full h-full object-cover" autoplay loop muted playsinline>
-      <source src="/so3_primer/video/racing.mp4" type="video/mp4">
+    style="height: 85vh;">
+    <video id="hero-video" class="w-full h-full object-cover" style="object-position: center 5%;" autoplay loop muted
+      playsinline>
+      <source src="/so3_primer/video/so3_primer.mp4" type="video/mp4">
     </video>
   </section>
 
@@ -123,30 +124,41 @@
     <section id="representations">
       <h2 class="text-3xl font-bold mb-6">An Idealized Experiment</h2>
       <div class="prose prose-lg max-w-none">
-        <figure class="float-right ml-6 mb-4 w-64">
-          <img src="env_dynamics.svg" alt="Environment dynamics showing rotation from current state to goal"
-            class="w-full">
-          <figcaption class="text-center text-xs text-gray-600 mt-2">The agent rotates from R<sub>t</sub> towards
-            R<sub>a</sub>, with max step α<sub>max</sub>, aiming to reach goal R<sub>g</sub>.</figcaption>
-        </figure>
+        <!-- Responsive container: stacks on mobile, side-by-side on desktop -->
+        <div class="flex flex-col md:flex-row gap-6 mb-8">
+          <!-- Text content: full width on mobile, flexible on desktop -->
+          <div class="flex-1 order-2 md:order-1">
+            <p class="text-lg leading-relaxed mb-4">
+              To really understand how rotation representations affect learning, we need to isolate the problem. So we
+              built
+              the simplest possible environment: an agent that only controls orientation, with orientation as the only
+              state. Think of it as a floating gyroscope that just needs to rotate into target orientations. Each
+              episode,
+              the agent starts at some random orientation and gets assigned a random
+              goal orientation. It can rotate at most α<sub>max</sub> radians per step, taking the shortest path toward
+              whatever orientation it commands.
+            </p>
+            <p class="text-lg leading-relaxed mb-4">
+              This setup let us run <em>a lot</em> of experiments. We tested all major representations (rotation
+              matrices,
+              quaternions, Euler angles, and tangent vectors) across three popular RL algorithms
+              (<strong class="font-mono">PPO</strong>, <strong class="font-mono">SAC</strong> and <strong
+                class="font-mono">TD3</strong> ), using both global and delta action formulations, and each with dense
+              and
+              sparse rewards. That's a lot of combinations, and the idealized environment made it feasible to thoroughly
+              explore the design space.
+            </p>
+          </div>
 
-        <p class="text-lg leading-relaxed mb-4">
-          To really understand how rotation representations affect learning, we need to isolate the problem. So we built
-          the simplest possible environment: an agent that only controls orientation, with orientation as the only
-          state. Think of it as a floating gyroscope that just needs to rotate into target orientations. Each episode,
-          the agent starts at some random orientation and gets assigned a random
-          goal orientation. It can rotate at most α<sub>max</sub> radians per step, taking the shortest path toward
-          whatever orientation it commands.
-        </p>
-        <p class="text-lg leading-relaxed mb-4">
-          This setup let us run <em>a lot</em> of experiments. We tested all major representations (rotation matrices,
-          quaternions, Euler angles, and tangent vectors) across three popular RL algorithms
-          (<strong class="font-mono">PPO</strong>, <strong class="font-mono">SAC</strong> and <strong
-            class="font-mono">TD3</strong> ), using both global and delta action formulations, and each with dense and
-          sparse rewards. That's a lot of combinations, and the idealized environment made it feasible to thoroughly
-          explore the design space.
-        </p>
-        </p>
+          <!-- Figure: full width on mobile, fixed width on desktop -->
+          <figure class="w-full md:w-64 md:flex-shrink-0 max-w-sm mx-auto md:max-w-none order-1 md:order-2">
+            <img src="env_dynamics.svg" alt="Environment dynamics showing rotation from current state to goal"
+              class="w-full h-auto">
+            <figcaption class="text-center text-xs text-gray-600 mt-2">The agent rotates from R<sub>t</sub> towards
+              R<sub>a</sub>, with max step α<sub>max</sub>, aiming to reach goal R<sub>g</sub>. Conceptual illustration
+              in 3D of the 4D rotation space.</figcaption>
+          </figure>
+        </div>
       </div>
     </section>
 
@@ -202,60 +214,94 @@
           space. Algorithms like PPO rely on small initial logstandards to encourage local exploration. However,
           Gaussian noise in the raw action space gets heavily distorted when projected onto SO(3).
         </p>
-        <p class="text-base leading-relaxed mb-4">
+        <p class="text-base leading-relaxed mb-6">
           Here we show how the same Gaussian noise limited to [-1, 1] with a Tanh activation and projected onto SO(3)
           leads to very different distributions of rotations for different action spaces. This explains e.g. why
           quaternions and rotation matrices perform poorly at initialization: the noise is nearly uniform across the
           representation space, leading to chaotic exploration.
         </p>
-        </p>
-        <div class="grid grid-cols-2 gap-4 my-8">
-          <div>
-            <h5 class="text-center font-semibold mb-2">Tangent (Local Frame)</h5>
-            <div id="distribution-viz-tangent" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-            <div class="px-4 py-3">
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.3</span>
+
+        <!-- Distribution Button Group -->
+        <div class="flex flex-wrap gap-3 mb-8 justify-center">
+          <button onclick="showDistribution('tangent')"
+            class="distribution-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg active"
+            data-distribution="tangent">
+            Tangent Vectors
+          </button>
+          <button onclick="showDistribution('matrix')"
+            class="distribution-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+            data-distribution="matrix">
+            Rotation Matrix
+          </button>
+          <button onclick="showDistribution('quaternion')"
+            class="distribution-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+            data-distribution="quaternion">
+            Quaternion
+          </button>
+          <button onclick="showDistribution('euler')"
+            class="distribution-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+            data-distribution="euler">
+            Euler Angles
+          </button>
+        </div>
+
+        <!-- Distribution Content Container with rounded background -->
+        <div
+          class="max-w-full md:max-w-3xl lg:max-w-4xl mx-auto bg-white rounded-3xl shadow-lg p-10 relative overflow-hidden aspect-ratio-container">
+          <div id="distribution-content-wrapper" class="relative">
+            <!-- Distribution Content Sections -->
+            <div id="distribution-tangent" class="distribution-content">
+              <h5 class="text-center font-semibold mb-2">Tangent Vectors</h5>
+              <div id="distribution-viz-tangent" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+              <div class="px-4 py-3">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                  <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.3</span>
+                </div>
+                <input type="range" id="slider-tangent" min="0.1" max="5.0" step="0.1" value="0.3"
+                  class="w-full slider">
               </div>
-              <input type="range" id="slider-tangent" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
-          </div>
-          <div>
-            <h5 class="text-center font-semibold mb-2">Rotation Matrix</h5>
-            <div id="distribution-viz-matrix" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-            <div class="px-4 py-3">
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.3</span>
+
+            <div id="distribution-matrix" class="distribution-content">
+              <h5 class="text-center font-semibold mb-2">Rotation Matrix</h5>
+              <div id="distribution-viz-matrix" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+              <div class="px-4 py-3">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                  <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.3</span>
+                </div>
+                <input type="range" id="slider-matrix" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
               </div>
-              <input type="range" id="slider-matrix" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
-          </div>
-          <div>
-            <h5 class="text-center font-semibold mb-2">Quaternion</h5>
-            <div id="distribution-viz-quaternion" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-            <div class="px-4 py-3">
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.3</span>
+
+            <div id="distribution-quaternion" class="distribution-content">
+              <h5 class="text-center font-semibold mb-2">Quaternion</h5>
+              <div id="distribution-viz-quaternion" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+              <div class="px-4 py-3">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                  <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.3</span>
+                </div>
+                <input type="range" id="slider-quaternion" min="0.1" max="5.0" step="0.1" value="0.3"
+                  class="w-full slider">
               </div>
-              <input type="range" id="slider-quaternion" min="0.1" max="5.0" step="0.1" value="0.3"
-                class="w-full slider">
             </div>
-          </div>
-          <div>
-            <h5 class="text-center font-semibold mb-2">Euler Angles</h5>
-            <div id="distribution-viz-euler" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-            <div class="px-4 py-3">
-              <div class="flex justify-between items-center mb-2">
-                <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
-                <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.3</span>
+
+            <div id="distribution-euler" class="distribution-content">
+              <h5 class="text-center font-semibold mb-2">Euler Angles</h5>
+              <div id="distribution-viz-euler" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
+              <div class="px-4 py-3">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
+                  <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.3</span>
+                </div>
+                <input type="range" id="slider-euler" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
               </div>
-              <input type="range" id="slider-euler" min="0.1" max="5.0" step="0.1" value="0.3" class="w-full slider">
             </div>
           </div>
         </div>
+
         <p class="text-sm text-gray-600 italic mt-4">
           Note: Ideally, we would visualize quaternions on a 4D sphere (S³), but since this is impossible to directly
           visualize, we instead show the resulting SO(3) samples in axis-angle (tangent) space for all representations.
@@ -318,53 +364,133 @@
         <section id="benchmarks">
           <h2 class="text-3xl font-bold mb-6">Benchmarks</h2>
           <div class="prose prose-lg max-w-none">
-            The idealized environment isolates rotation representations, but real robots deal with much messier
-            scenarios.
-            We tested the representations on three actual robotics benchmarks to see if our findings hold up when
-            orientation control is mixed with position control, contact dynamics, and physical constraints.
+            <p class="text-base leading-relaxed mb-6">
+              The idealized environment isolates rotation representations, but real robots deal with much messier
+              scenarios.
+              We tested the representations on three actual robotics benchmarks to see if our findings hold up when
+              orientation control is mixed with position control, contact dynamics, and physical constraints.
+            </p>
 
-
-            <h3 class="text-2xl font-semibold mb-4 mt-8">Drone Control</h3>
-            Drone control is an interesting test case because attitude control is a typical interface type, and because
-            the
-            unstable dynamics add complexity beyond our idealized environment. We evaluate on two tasks, trajectory
-            tracking
-            and drone racing, using <a href="https://github.com/utiasDSL/crazyflow" target="_blank"
-              class="text-blue-600 hover:text-blue-800">Crazyflow</a> as simulator.
-            <div class="grid grid-cols-2 gap-4 my-6">
-              <figure>
-                <img src="figure8.png" alt="Drone trajectory tracking results" class="w-full">
-                <figcaption class="text-center text-xs text-gray-600 mt-2">Trajectory tracking</figcaption>
-              </figure>
-              <figure>
-                <img src="racing.png" alt="Drone racing results" class="w-full">
-                <figcaption class="text-center text-xs text-gray-600 mt-2">Drone racing</figcaption>
-              </figure>
+            <!-- Benchmark Button Group -->
+            <div class="flex flex-wrap gap-3 mb-8 justify-center">
+              <button onclick="showBenchmark('trajectory')"
+                class="benchmark-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg active"
+                data-benchmark="trajectory">
+                Trajectory tracking
+              </button>
+              <button onclick="showBenchmark('racing')"
+                class="benchmark-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+                data-benchmark="racing">
+                Drone racing
+              </button>
+              <button onclick="showBenchmark('reach')"
+                class="benchmark-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+                data-benchmark="reach">
+                Reach
+              </button>
+              <button onclick="showBenchmark('pick')"
+                class="benchmark-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+                data-benchmark="pick">
+                Pick and place
+              </button>
+              <button onclick="showBenchmark('robosuite')"
+                class="benchmark-btn px-6 py-3 rounded-full font-medium transition-all duration-200 hover:shadow-lg"
+                data-benchmark="robosuite">
+                RoboSuite
+              </button>
             </div>
 
-            <h3 class="text-2xl font-semibold mb-4 mt-8">Goal-Conditioned Manipulation</h3>
-            Our second benchmark modifies the popular <a href="https://robotics.farama.org/envs/fetch/index.html"
-              target="_blank" class="text-blue-600 hover:text-blue-800">Fetch</a> environments from OpenAI with
-            orientation
-            goals, testing two tasks: reaching a target pose and picking and placing an object at a target pose.
-            <div class="grid grid-cols-2 gap-4 my-6">
-              <figure>
-                <img src="reach.png" alt="ReachOrient task results" class="w-full">
-                <figcaption class="text-center text-xs text-gray-600 mt-2">ReachOrient</figcaption>
-              </figure>
-              <figure>
-                <img src="pick.png" alt="PickAndPlaceOrient task results" class="w-full">
-                <figcaption class="text-center text-xs text-gray-600 mt-2">PickAndPlaceOrient</figcaption>
-              </figure>
+            <!-- Benchmark Content Container with rounded background -->
+            <div class="bg-white rounded-3xl shadow-lg p-10">
+              <div id="benchmark-content-wrapper" class="relative">
+                <!-- Benchmark Content Sections -->
+                <div id="benchmark-trajectory" class="benchmark-content">
+                  <h3 class="text-2xl font-semibold mb-4">Trajectory tracking</h3>
+                  <p class="text-base leading-relaxed mb-4">
+                    Tracking a figure 8 trajectory is a typical control benchmark for drones. In our case, the agent
+                    controls collective thrust and drone attitude (orientation), a common control interface for drones.
+                    We train a PPO agent in <a href="https://github.com/utiasDSL/crazyflow" target="_blank"
+                      class="text-blue-600 hover:text-blue-800"><code
+                        class="text-xs bg-gray-200 px-1 rounded">Crazyflow</code></a>, a jax-powered, massively parallel
+                    drone
+                    simulator. For systems that have unstable dynamics such as drones, having a representation centered
+                    around the unit rotation (tangents or Euler angles) is especially impactful.
+                  </p>
+                  <figure class="my-6">
+                    <img src="figure8.png" alt="Drone trajectory tracking results" class="w-full max-w-2xl mx-auto">
+                    <figcaption class="text-center text-sm text-gray-600 mt-2">Trajectory tracking results</figcaption>
+                  </figure>
+                </div>
+
+                <div id="benchmark-racing" class="benchmark-content">
+                  <h3 class="text-2xl font-semibold mb-4">Drone racing</h3>
+                  <p class="text-base leading-relaxed mb-4">
+                    Drone racing is interesting because agents operate at the limits of the drones' capabilities, using
+                    a larger range of attitudes. We adopt the setup of the IROS 2022 Safe Robot Learning Competition,
+                    modified to work with our parallelized simulation (<a
+                      href="https://github.com/utiasDSL/lsy_drone_racing" target="_blank"
+                      class="text-blue-600 hover:text-blue-800">GitHub</a>). While the effect is less clear due to the
+                    task complexity, we see the same trends as in the trajectory tracking benchmark with delta actions
+                    in the tangent space outperforming all other representations.
+                  </p>
+                  <figure class="my-6">
+                    <img src="racing.png" alt="Drone racing results" class="w-full max-w-2xl mx-auto">
+                    <figcaption class="text-center text-sm text-gray-600 mt-2">Drone racing results</figcaption>
+                  </figure>
+                </div>
+
+                <div id="benchmark-reach" class="benchmark-content">
+                  <h3 class="text-2xl font-semibold mb-4">ReachOrient</h3>
+                  <p class="text-base leading-relaxed mb-4">
+                    ReachOrient modifies the popular <a href="https://robotics.farama.org/envs/fetch/index.html"
+                      target="_blank" class="text-blue-600 hover:text-blue-800"><code
+                        class="text-xs bg-gray-200 px-1 rounded">Fetch</code></a> environments from OpenAI
+                    to include position and orientation goals, and switches out the arm with a FR3. We use a setup with
+                    Hindsight Experience Replay (HER) and train with sparse rewards. Because the arm cannot get
+                    unstable, the matrix representation performs much better than in the drone benchmarks and is on par
+                    with the tangent (i.e. axis-angle) representation.
+                  </p>
+                  <figure class="my-6">
+                    <img src="reach.png" alt="ReachOrient task results" class="w-full max-w-2xl mx-auto">
+                    <figcaption class="text-center text-sm text-gray-600 mt-2">ReachOrient results</figcaption>
+                  </figure>
+                </div>
+
+                <div id="benchmark-pick" class="benchmark-content">
+                  <h3 class="text-2xl font-semibold mb-4">PickAndPlaceOrient</h3>
+                  <p class="text-base leading-relaxed mb-4">
+                    PickAndPlaceOrient similarly modifies the PickAndPlace <a
+                      href="https://robotics.farama.org/envs/fetch/index.html" target="_blank"
+                      class="text-blue-600 hover:text-blue-800"><code
+                        class="text-xs bg-gray-200 px-1 rounded">Fetch</code></a> environment with orientation goals.
+                    The robot must pick up a cube and place it into a target position with the correct orientation. The
+                    handling of the cube makes reasoning about rotations more complex, and we see a larger gap between
+                    the representations, with tangent vectors outperforming all other representations.
+                  </p>
+                  <figure class="my-6">
+                    <img src="pick.png" alt="PickAndPlaceOrient task results" class="w-full max-w-2xl mx-auto">
+                    <figcaption class="text-center text-sm text-gray-600 mt-2">PickAndPlaceOrient results</figcaption>
+                  </figure>
+                </div>
+
+                <div id="benchmark-robosuite" class="benchmark-content">
+                  <h3 class="text-2xl font-semibold mb-4">RoboSuite</h3>
+                  <p class="text-base leading-relaxed mb-4">
+                    We evaluate the representations across nine manipulation tasks from the RoboSuite benchmark, testing
+                    performance on a variety of contact-rich manipulation scenarios. The performance is dominated by the
+                    task choice, not representation choice. We attribute this to agents failing to learn meaningful
+                    policies in several of the tasks, or only finding a partial solution, irrespective of their
+                    representation.
+                  </p>
+                  <figure class="my-6">
+                    <img src="robosuite_bar.png" alt="RoboSuite benchmark results" class="w-full max-w-4xl mx-auto">
+                    <figcaption class="text-center text-sm text-gray-600 mt-2">Performance across nine manipulation
+                      tasks
+                    </figcaption>
+                  </figure>
+                </div>
+              </div>
             </div>
-
-            <h3 class="text-2xl font-semibold mb-4 mt-8">Robot Manipulation (RoboSuite)</h3>
-            <figure class="my-6">
-              <img src="robosuite_bar.png" alt="RoboSuite benchmark results" class="w-full max-w-4xl mx-auto">
-              <figcaption class="text-center text-sm text-gray-600 mt-2">Performance across nine manipulation tasks
-              </figcaption>
-            </figure>
-
           </div>
         </section>
 
