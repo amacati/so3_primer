@@ -29,7 +29,7 @@ __pycache__/
 
 # Large media files
 public/video/*.mp4
-!public/video/racing.mp4
+!public/video/so3_primer.mp4
 public/video/*.webm
 
 # Main repository files that should not be included in the website
