@@ -36,6 +36,14 @@ npm run build
 
 The static site will be generated in the `dist/` directory, ready for deployment to GitHub Pages.
 
+## Deploying to GitHub Pages
+
+```bash
+npm run deploy
+```
+
+This will build the site and push the contents of `dist/` to the `gh-pages` branch, making it available at `https://amacati.github.io/so3_primer/`.
+
 ## Citation
 
 If you find this work useful, please cite our paper:
