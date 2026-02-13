@@ -7,6 +7,8 @@
 
 This repository contains the source code for **"A Primer on SO(3) Action Representations in Deep Reinforcement Learning"**.
 
+![Cover image](docs/img/cover.jpg)
+
 ## Running the Experiments
 
 ### Setup
