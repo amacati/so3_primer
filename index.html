@@ -14,10 +14,10 @@
 
 <body class="bg-gray-50 text-gray-900 overflow-x-hidden">
   <!-- Hero Video Section -->
-  <section id="hero" class="relative w-full overflow-hidden bg-black flex items-center justify-center"
-    style="height: 85vh;">
-    <video id="hero-video" class="w-full h-full object-cover" style="object-position: center 5%;" autoplay loop muted
-      playsinline>
+  <section id="hero"
+    class="relative w-full overflow-hidden bg-black flex items-center justify-center h-auto md:h-[85vh]">
+    <video id="hero-video" class="w-full h-auto md:h-full md:object-cover" style="object-position: center 5%;" autoplay
+      loop muted playsinline>
       <source src="/video/so3_primer.mp4" type="video/mp4">
     </video>
   </section>
@@ -244,13 +244,14 @@
 
         <!-- Distribution Content Container with rounded background -->
         <div
-          class="max-w-full md:max-w-3xl lg:max-w-4xl mx-auto bg-white rounded-3xl shadow-lg p-10 relative overflow-hidden aspect-ratio-container">
+          class="w-full max-w-3xl mx-auto bg-white rounded-2xl md:rounded-3xl shadow-lg px-4 pt-4 pb-2 md:px-10 md:pt-10 md:pb-4 relative overflow-hidden">
           <div id="distribution-content-wrapper" class="relative">
             <!-- Distribution Content Sections -->
             <div id="distribution-tangent" class="distribution-content">
-              <h5 class="text-center font-semibold mb-2">Tangent Vectors</h5>
-              <div id="distribution-viz-tangent" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-              <div class="px-4 py-3">
+              <h5 class="text-center font-semibold mb-2 text-sm md:text-base">Tangent Vectors</h5>
+              <div id="distribution-viz-tangent" class="bg-gray-50 rounded-lg shadow w-full" style="height: 240px;">
+              </div>
+              <div class="px-2 md:px-4 pt-3 pb-0">
                 <div class="flex justify-between items-center mb-2">
                   <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
                   <span id="std-tangent" class="text-sm font-mono font-bold text-blue-600">0.3</span>
@@ -261,9 +262,10 @@
             </div>
 
             <div id="distribution-matrix" class="distribution-content">
-              <h5 class="text-center font-semibold mb-2">Rotation Matrix</h5>
-              <div id="distribution-viz-matrix" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-              <div class="px-4 py-3">
+              <h5 class="text-center font-semibold mb-2 text-sm md:text-base">Rotation Matrix</h5>
+              <div id="distribution-viz-matrix" class="bg-gray-50 rounded-lg shadow w-full" style="height: 240px;">
+              </div>
+              <div class="px-2 md:px-4 pt-3 pb-0">
                 <div class="flex justify-between items-center mb-2">
                   <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
                   <span id="std-matrix" class="text-sm font-mono font-bold text-orange-600">0.3</span>
@@ -273,9 +275,10 @@
             </div>
 
             <div id="distribution-quaternion" class="distribution-content">
-              <h5 class="text-center font-semibold mb-2">Quaternion</h5>
-              <div id="distribution-viz-quaternion" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-              <div class="px-4 py-3">
+              <h5 class="text-center font-semibold mb-2 text-sm md:text-base">Quaternion</h5>
+              <div id="distribution-viz-quaternion" class="bg-gray-50 rounded-lg shadow w-full" style="height: 240px;">
+              </div>
+              <div class="px-2 md:px-4 pt-3 pb-0">
                 <div class="flex justify-between items-center mb-2">
                   <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
                   <span id="std-quaternion" class="text-sm font-mono font-bold text-pink-600">0.3</span>
@@ -286,9 +289,9 @@
             </div>
 
             <div id="distribution-euler" class="distribution-content">
-              <h5 class="text-center font-semibold mb-2">Euler Angles</h5>
-              <div id="distribution-viz-euler" class="bg-gray-50 rounded-lg shadow" style="height: 300px;"></div>
-              <div class="px-4 py-3">
+              <h5 class="text-center font-semibold mb-2 text-sm md:text-base">Euler Angles</h5>
+              <div id="distribution-viz-euler" class="bg-gray-50 rounded-lg shadow w-full" style="height: 240px;"></div>
+              <div class="px-2 md:px-4 pt-3 pb-0">
                 <div class="flex justify-between items-center mb-2">
                   <label class="text-xs font-mono text-gray-600 uppercase tracking-wide">σ (Std Dev)</label>
                   <span id="std-euler" class="text-sm font-mono font-bold text-green-600">0.3</span>
